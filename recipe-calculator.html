@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="recipe-text-importer.js"></script>
+    <title>Recipe Cost Calculator</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        margin: 0;
+        padding: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      h1,
+      h2 {
+        color: #333;
+      }
+      .container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+      .card {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      textarea {
+        width: 100%;
+        height: 200px;
+        margin-bottom: 10px;
+        padding: 8px;
+        font-family: monospace;
+      }
+      button {
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+        border-radius: 4px;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+      }
+      table,
+      th,
+      td {
+        border: 1px solid #ddd;
+      }
+      th,
+      td {
+        padding: 8px;
+        text-align: left;
+      }
+      th {
+        background-color: #f2f2f2;
+      }
+      .recipe-form label {
+        display: block;
+        margin: 8px 0 4px;
+      }
+      .recipe-form input {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 10px;
+      }
+      .ingredient-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr 2fr;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+      #ingredientsTable {
+        margin-top: 20px;
+      }
+      #saveIngredientBtn {
+        background-color: #2196f3;
+      }
+      #saveIngredientBtn:hover {
+        background-color: #0b7dda;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Recipe Cost Calculator</h1>
+
+    <div class="container">
+      <div>
+        <div class="card">
+          <h2>Import Ingredients</h2>
+          <textarea
+            id="ingredientsCsv"
+            placeholder="Paste your ingredients CSV here..."
+          ></textarea>
+          <button id="importIngredientsBtn">Import Ingredients</button>
+          <button id="clearIngredientsBtn">Clear</button>
+        </div>
+
+        <div class="card">
+          <h2>Ingredient Variables</h2>
+          <textarea id="ingredientVariables" readonly></textarea>
+          <button id="copyVariablesBtn">Copy to Clipboard</button>
+          <button id="saveIngredientsDataBtn">Save Ingredients</button>
+        </div>
+
+        <div class="card">
+          <h2>Add/Edit Single Ingredient</h2>
+          <div class="recipe-form">
+            <label for="ingredientName">Ingredient Name:</label>
+            <input
+              type="text"
+              id="ingredientName"
+              placeholder="Enter ingredient name"
+            />
+
+            <label for="ingredientUnit">Unit:</label>
+            <select id="ingredientUnit">
+              <option value="kg">kg</option>
+              <option value="g">g</option>
+              <option value="l">l</option>
+              <option value="each">each</option>
+            </select>
+
+            <label for="ingredientPrice">Price per Unit:</label>
+            <input
+              type="number"
+              id="ingredientPrice"
+              step="0.01"
+              placeholder="Enter price"
+            />
+
+            <label for="ingredientSupplier">Supplier:</label>
+            <input
+              type="text"
+              id="ingredientSupplier"
+              placeholder="Enter supplier"
+            />
+
+            <label for="ingredientNotes">Notes:</label>
+            <input type="text" id="ingredientNotes" placeholder="Enter notes" />
+
+            <button id="saveIngredientBtn">Save Ingredient</button>
+          </div>
+
+          <div id="ingredientsTable">
+            <h3>Current Ingredients</h3>
+            <table id="currentIngredients">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Unit</th>
+                  <th>Price</th>
+                  <th>Price Per g</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Ingredients will be listed here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card">
+          <h2>Create Recipe</h2>
+          <div class="recipe-form">
+            <label for="recipeName">Recipe Name:</label>
+            <input
+              type="text"
+              id="recipeName"
+              placeholder="Enter recipe name"
+            />
+
+            <label for="recipeYield">Yield (grams):</label>
+            <input
+              type="number"
+              id="recipeYield"
+              placeholder="Enter yield in grams"
+            />
+
+            <label for="portionSize">Portion Size (grams):</label>
+            <input
+              type="number"
+              id="portionSize"
+              placeholder="Enter portion size in grams"
+            />
+
+            <h3>Ingredients</h3>
+            <div id="ingredientsList">
+              <!-- Ingredient rows will be added here -->
+            </div>
+
+            <button id="addIngredientBtn">Add Ingredient</button>
+            <button id="calculateRecipeBtn">Calculate Recipe</button>
+            <button id="saveRecipeDataBtn">Save Recipe Data</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Recipe Output</h2>
+          <textarea id="recipeOutput" readonly></textarea>
+          <button id="copyRecipeBtn">Copy to Clipboard</button>
+          <button id="downloadCsvBtn">Download as CSV</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Saved Data</h2>
+      <button id="saveAllDataBtn">Save All Data</button>
+      <button id="loadDataBtn">Load Data</button>
+      <input
+        type="file"
+        id="loadDataFile"
+        accept=".json"
+        style="display: none"
+      />
+    </div>
+
+    <script>
+      // TypeScript code will be compiled and inserted here
+      class RecipeCostCalculator {
+        constructor() {
+          this.ingredients = new Map();
+          this.recipes = new Map();
+        }
+
+        addIngredient(name, unit, price, supplier, notes) {
+          // Calculate price per gram based on unit
+          let pricePerG;
+
+          if (unit.toLowerCase() === "kg") {
+            pricePerG = price / 1000;
+          } else if (unit.toLowerCase() === "g") {
+            pricePerG = price;
+          } else if (unit.toLowerCase() === "l") {
+            // Assuming density of 1g/ml for simplicity
+            pricePerG = price / 1000;
+          } else if (unit.toLowerCase() === "each") {
+            // For "each" units, price is per individual item
+            const weightMatch = notes?.match(/average.*?(\d+)g/i);
+            const weight = weightMatch ? parseInt(weightMatch[1]) : 100;
+            pricePerG = price / weight;
+          } else {
+            pricePerG = price; // Default case
+          }
+
+          this.ingredients.set(name, {
+            name,
+            unit,
+            pricePerKg: unit.toLowerCase() === "kg" ? price : price * 1000,
+            pricePerG,
+            supplier,
+            notes,
+          });
+
+          // Update the ingredients table
+          this.updateIngredientsTable();
+
+          return this.ingredients.get(name);
+        }
+
+        updateIngredientsTable() {
+          const tableBody = document.querySelector("#currentIngredients tbody");
+          if (!tableBody) return;
+
+          // Clear existing rows
+          tableBody.innerHTML = "";
+
+          // Add a row for each ingredient
+          this.ingredients.forEach((ing) => {
+            const row = document.createElement("tr");
+
+            // Add cells for each property
+            row.innerHTML = `
+                        <td>${ing.name}</td>
+                        <td>${ing.unit}</td>
+                        <td>${
+                          ing.unit.toLowerCase() === "kg"
+                            ? ing.pricePerKg.toFixed(2)
+                            : ing.pricePerG.toFixed(4)
+                        } per ${ing.unit}</td>
+                        <td>${ing.pricePerG.toFixed(6)}</td>
+                        <td>
+                            <button class="edit-ingredient" data-name="${
+                              ing.name
+                            }">Edit</button>
+                            <button class="delete-ingredient" data-name="${
+                              ing.name
+                            }">Delete</button>
+                        </td>
+                    `;
+
+            tableBody.appendChild(row);
+          });
+
+          // Add event listeners for edit and delete buttons
+          document.querySelectorAll(".edit-ingredient").forEach((button) => {
+            button.addEventListener("click", () => {
+              const name = button.getAttribute("data-name");
+              const ingredient = this.ingredients.get(name);
+              if (ingredient) {
+                document.getElementById("ingredientName").value =
+                  ingredient.name;
+                document.getElementById("ingredientUnit").value =
+                  ingredient.unit;
+                document.getElementById("ingredientPrice").value =
+                  ingredient.unit.toLowerCase() === "kg"
+                    ? ingredient.pricePerKg
+                    : ingredient.pricePerG;
+                document.getElementById("ingredientSupplier").value =
+                  ingredient.supplier || "";
+                document.getElementById("ingredientNotes").value =
+                  ingredient.notes || "";
+              }
+            });
+          });
+
+          document.querySelectorAll(".delete-ingredient").forEach((button) => {
+            button.addEventListener("click", () => {
+              const name = button.getAttribute("data-name");
+              if (
+                confirm(
+                  `Are you sure you want to delete the ingredient "${name}"?`
+                )
+              ) {
+                this.ingredients.delete(name);
+                this.updateIngredientsTable();
+                this.updateIngredientDropdowns();
+                updateIngredientVariables();
+              }
+            });
+          });
+        }
+
+        importIngredientsFromCSV(csvData) {
+          const lines = csvData.split("\n");
+
+          // Skip header
+          for (let i = 1; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (!line) continue;
+
+            const columns = line.split(",");
+            if (columns.length >= 5) {
+              const name = columns[0];
+              const unit = columns[1];
+              const pricePerG = parseFloat(columns[4]);
+              const supplier = columns[5] || "";
+              const notes = columns.length > 7 ? columns[7] : "";
+
+              // Calculate original price based on unit
+              let originalPrice;
+              if (unit.toLowerCase() === "kg") {
+                originalPrice = pricePerG * 1000;
+              } else {
+                originalPrice = pricePerG;
+              }
+
+              this.addIngredient(name, unit, originalPrice, supplier, notes);
+            }
+          }
+        }
+
+        createRecipe(name, yieldAmount, recipeIngredients, portionSize) {
+          const date = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+
+          const recipe = {
+            name,
+            yield: yieldAmount,
+            date,
+            ingredients: recipeIngredients,
+            portionSize,
+          };
+
+          this.recipes.set(name, recipe);
+          return recipe;
+        }
+
+        calculateRecipeCost(recipeName) {
+          const recipe = this.recipes.get(recipeName);
+          if (!recipe) {
+            throw new Error(`Recipe "${recipeName}" not found`);
+          }
+
+          let totalCost = 0;
+
+          // Calculate the cost of each ingredient
+          recipe.ingredients.forEach((ing) => {
+            const ingredient = this.ingredients.get(ing.ingredient);
+            if (!ingredient) {
+              console.warn(
+                `Ingredient "${ing.ingredient}" not found in database`
+              );
+              return;
+            }
+
+            const cost = ing.quantity * ingredient.pricePerG;
+            totalCost += cost;
+          });
+
+          const costPerG = totalCost / recipe.yield;
+          const costPerPortion = recipe.portionSize
+            ? costPerG * recipe.portionSize
+            : undefined;
+
+          return {
+            recipe,
+            totalCost,
+            costPerG,
+            costPerPortion,
+          };
+        }
+
+        generateRecipeCSV(recipeName) {
+          const { recipe, totalCost, costPerG, costPerPortion } =
+            this.calculateRecipeCost(recipeName);
+
+          const lines = [
+            `Recipe Name,${recipe.name},,,,,,`,
+            `Yield,${recipe.yield},g,,,,,`,
+            `Date,${recipe.date},,,,,`,
+            "",
+            "Ingredient,Quantity (g),Price per g,Extended Cost,Notes,",
+          ];
+
+          recipe.ingredients.forEach((ing) => {
+            const ingredient = this.ingredients.get(ing.ingredient);
+            if (!ingredient) return;
+
+            const extendedCost = ing.quantity * ingredient.pricePerG;
+            lines.push(
+              `${ing.ingredient},${ing.quantity},${ingredient.pricePerG.toFixed(
+                4
+              )},${extendedCost.toFixed(4)},${ing.notes || ""},`
+            );
+          });
+
+          lines.push("");
+          lines.push(`Total Recipe Cost,,,${totalCost.toFixed(4)},,`);
+          lines.push(`Yield (g),,,${recipe.yield},,`);
+          lines.push(`Cost per g,,,${costPerG.toFixed(4)},,`);
+
+          if (recipe.portionSize && costPerPortion) {
+            lines.push(`Portion Size (g),,,${recipe.portionSize},,`);
+            lines.push(`Cost per Portion,,,${costPerPortion.toFixed(4)},,`);
+          }
+
+          return lines.join("\n");
+        }
+
+        getIngredientsAsVariables() {
+          const lines = [
+            "// Ingredient variables for reference",
+            "// Generated on " + new Date().toISOString(),
+            "",
+          ];
+
+          this.ingredients.forEach((ing) => {
+            // Create a valid variable name
+            const varName = ing.name
+              .replace(/[^a-zA-Z0-9]/g, "_")
+              .replace(/_+/g, "_")
+              .toLowerCase();
+
+            lines.push(
+              `const ${varName} = ${ing.pricePerG.toFixed(6)}; // ${
+                ing.name
+              } per gram (${ing.unit} @ ${ing.pricePerKg.toFixed(2)})`
+            );
+          });
+
+          return lines.join("\n");
+        }
+
+        getIngredientNames() {
+          return Array.from(this.ingredients.keys()).sort();
+        }
+
+        exportData() {
+          return JSON.stringify(
+            {
+              ingredients: Array.from(this.ingredients.entries()),
+              recipes: Array.from(this.recipes.entries()),
+            },
+            null,
+            2
+          );
+        }
+
+        exportIngredientsOnly() {
+          return JSON.stringify(
+            {
+              ingredients: Array.from(this.ingredients.entries()),
+            },
+            null,
+            2
+          );
+        }
+
+        exportRecipeOnly(recipeName) {
+          const recipe = this.recipes.get(recipeName);
+          if (!recipe) {
+            throw new Error(`Recipe "${recipeName}" not found`);
+          }
+
+          return JSON.stringify(
+            {
+              recipes: [[recipeName, recipe]],
+            },
+            null,
+            2
+          );
+        }
+
+        importData(jsonData) {
+          try {
+            const data = JSON.parse(jsonData);
+
+            if (data.ingredients) {
+              this.ingredients = new Map(data.ingredients);
+              this.updateIngredientsTable();
+            }
+
+            if (data.recipes) {
+              this.recipes = new Map(data.recipes);
+            }
+          } catch (e) {
+            console.error("Error importing data:", e);
+          }
+        }
+      }
+
+      // Initialize calculator
+      const calculator = new RecipeCostCalculator();
+
+      // DOM elements
+      const ingredientsCsvEl = document.getElementById("ingredientsCsv");
+      const ingredientVariablesEl = document.getElementById(
+        "ingredientVariables"
+      );
+      const recipeNameEl = document.getElementById("recipeName");
+      const recipeYieldEl = document.getElementById("recipeYield");
+      const portionSizeEl = document.getElementById("portionSize");
+      const ingredientsListEl = document.getElementById("ingredientsList");
+      const recipeOutputEl = document.getElementById("recipeOutput");
+
+      // Import ingredients
+      document
+        .getElementById("importIngredientsBtn")
+        .addEventListener("click", () => {
+          const csvData = ingredientsCsvEl.value;
+          if (csvData) {
+            calculator.importIngredientsFromCSV(csvData);
+            updateIngredientVariables();
+            updateIngredientDropdowns();
+            alert("Ingredients imported successfully!");
+          }
+        });
+
+      // Clear ingredients
+      document
+        .getElementById("clearIngredientsBtn")
+        .addEventListener("click", () => {
+          ingredientsCsvEl.value = "";
+        });
+
+      // Update ingredient variables display
+      function updateIngredientVariables() {
+        ingredientVariablesEl.value = calculator.getIngredientsAsVariables();
+      }
+
+      // Copy variables to clipboard
+      document
+        .getElementById("copyVariablesBtn")
+        .addEventListener("click", () => {
+          ingredientVariablesEl.select();
+          document.execCommand("copy");
+          alert("Variables copied to clipboard!");
+        });
+
+      // Save single ingredient
+      document
+        .getElementById("saveIngredientBtn")
+        .addEventListener("click", () => {
+          const name = document.getElementById("ingredientName").value;
+          const unit = document.getElementById("ingredientUnit").value;
+          const price = parseFloat(
+            document.getElementById("ingredientPrice").value
+          );
+          const supplier = document.getElementById("ingredientSupplier").value;
+          const notes = document.getElementById("ingredientNotes").value;
+
+          if (!name || isNaN(price)) {
+            alert("Please enter a name and valid price.");
+            return;
+          }
+
+          calculator.addIngredient(name, unit, price, supplier, notes);
+          updateIngredientVariables();
+          updateIngredientDropdowns();
+
+          // Clear form
+          document.getElementById("ingredientName").value = "";
+          document.getElementById("ingredientPrice").value = "";
+          document.getElementById("ingredientSupplier").value = "";
+          document.getElementById("ingredientNotes").value = "";
+
+          alert(`Ingredient "${name}" saved successfully!`);
+        });
+
+      // Save ingredients only
+      document
+        .getElementById("saveIngredientsDataBtn")
+        .addEventListener("click", () => {
+          const data = calculator.exportIngredientsOnly();
+          const blob = new Blob([data], { type: "application/json" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `recipe_calculator_ingredients_${
+            new Date().toISOString().split("T")[0]
+          }.json`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        });
+
+      // Save recipe only
+      document
+        .getElementById("saveRecipeDataBtn")
+        .addEventListener("click", () => {
+          const recipeName = recipeNameEl.value;
+          if (!recipeName) {
+            alert("Please enter a recipe name.");
+            return;
+          }
+
+          try {
+            const data = calculator.exportRecipeOnly(recipeName);
+            const sanitizedName = recipeName
+              .replace(/[^a-z0-9]/gi, "_")
+              .toLowerCase();
+            const blob = new Blob([data], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `recipe_calculator_recipe_${sanitizedName}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          } catch (e) {
+            alert(e.message);
+          }
+        });
+
+      // Add ingredient row
+      document
+        .getElementById("addIngredientBtn")
+        .addEventListener("click", () => {
+          addIngredientRow();
+        });
+
+      function addIngredientRow() {
+        const row = document.createElement("div");
+        row.className = "ingredient-row";
+
+        const ingredients = calculator.getIngredientNames();
+
+        // Create dropdown for ingredient selection
+        const select = document.createElement("select");
+        select.className = "ingredient-select";
+
+        // Add empty option
+        const emptyOption = document.createElement("option");
+        emptyOption.value = "";
+        emptyOption.textContent = "Select ingredient...";
+        select.appendChild(emptyOption);
+
+        // Add all ingredients as options
+        ingredients.forEach((ing) => {
+          const option = document.createElement("option");
+          option.value = ing;
+          option.textContent = ing;
+          select.appendChild(option);
+        });
+
+        // Create quantity input
+        const quantityInput = document.createElement("input");
+        quantityInput.type = "number";
+        quantityInput.className = "ingredient-quantity";
+        quantityInput.placeholder = "Quantity (g)";
+
+        // Create notes input
+        const notesInput = document.createElement("input");
+        notesInput.type = "text";
+        notesInput.className = "ingredient-notes";
+        notesInput.placeholder = "Notes";
+
+        // Add all elements to the row
+        row.appendChild(select);
+        row.appendChild(quantityInput);
+        row.appendChild(notesInput);
+
+        // Add the row to the list
+        ingredientsListEl.appendChild(row);
+      }
+
+      // Update ingredient dropdowns when ingredients change
+      function updateIngredientDropdowns() {
+        // Clear existing ingredient rows
+        ingredientsListEl.innerHTML = "";
+
+        // Add one empty row
+        addIngredientRow();
+      }
+
+      // Calculate recipe
+      document
+        .getElementById("calculateRecipeBtn")
+        .addEventListener("click", () => {
+          const recipeName = recipeNameEl.value;
+          const recipeYield = parseFloat(recipeYieldEl.value);
+          const portionSize = parseFloat(portionSizeEl.value) || undefined;
+
+          if (!recipeName || isNaN(recipeYield)) {
+            alert("Please enter a recipe name and valid yield.");
+            return;
+          }
+
+          // Gather ingredients
+          const ingredientRows = document.querySelectorAll(".ingredient-row");
+          const recipeIngredients = [];
+
+          ingredientRows.forEach((row) => {
+            const ingredientName =
+              row.querySelector(".ingredient-select").value;
+            const quantity = parseFloat(
+              row.querySelector(".ingredient-quantity").value
+            );
+            const notes = row.querySelector(".ingredient-notes").value;
+
+            if (ingredientName && !isNaN(quantity)) {
+              recipeIngredients.push({
+                ingredient: ingredientName,
+                quantity,
+                notes,
+              });
+            }
+          });
+
+          if (recipeIngredients.length === 0) {
+            alert("Please add at least one ingredient.");
+            return;
+          }
+
+          // Create recipe
+          calculator.createRecipe(
+            recipeName,
+            recipeYield,
+            recipeIngredients,
+            portionSize
+          );
+
+          // Generate and display CSV
+          const recipeCSV = calculator.generateRecipeCSV(recipeName);
+          recipeOutputEl.value = recipeCSV;
+        });
+
+      // Copy recipe to clipboard
+      document.getElementById("copyRecipeBtn").addEventListener("click", () => {
+        recipeOutputEl.select();
+        document.execCommand("copy");
+        alert("Recipe copied to clipboard!");
+      });
+
+      // Download recipe as CSV
+      document
+        .getElementById("downloadCsvBtn")
+        .addEventListener("click", () => {
+          const recipeName = recipeNameEl.value || "recipe";
+          const csvContent = recipeOutputEl.value;
+
+          if (!csvContent) {
+            alert("No recipe to download.");
+            return;
+          }
+
+          const sanitizedName = recipeName
+            .replace(/[^a-z0-9]/gi, "_")
+            .toLowerCase();
+          const blob = new Blob([csvContent], { type: "text/csv" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `${sanitizedName}.csv`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        });
+
+      // Save all data
+      document
+        .getElementById("saveAllDataBtn")
+        .addEventListener("click", () => {
+          const data = calculator.exportData();
+          const blob = new Blob([data], { type: "application/json" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          // Use current date in filename
+          const dateStr = new Date().toISOString().split("T")[0];
+          a.download = `recipe_calculator_all_data_${dateStr}.json`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        });
+
+      // Trigger file input when Load Data button is clicked
+      document.getElementById("loadDataBtn").addEventListener("click", () => {
+        document.getElementById("loadDataFile").click();
+      });
+
+      // Load data from file
+      document
+        .getElementById("loadDataFile")
+        .addEventListener("change", (event) => {
+          const file = event.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              try {
+                calculator.importData(e.target.result);
+                updateIngredientVariables();
+                updateIngredientDropdowns();
+                alert("Data loaded successfully!");
+              } catch (error) {
+                alert("Error loading data: " + error.message);
+              }
+            };
+            reader.readAsText(file);
+          }
+        });
+
+      // Initialize with one empty ingredient row and ingredients table
+      addIngredientRow();
+      calculator.updateIngredientsTable();
+    </script>
+  </body>
+</html>
