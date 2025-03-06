@@ -4,7 +4,15 @@
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "electron ."
+    "start": "electron .",
+    "build": "electron-builder --mac"
+  },
+  "build": {
+    "appId": "com.yourname.recipe-calculator",
+    "productName": "Recipe Calculator",
+    "mac": {
+      "category": "public.app-category.utilities"
+    }
   },
   "keywords": [],
   "author": "",
@@ -12,6 +20,7 @@
   "description": "",
   "devDependencies": {
     "electron": "^35.0.0",
+    "electron-builder": "^25.1.8",
     "electron-packager": "^17.1.2"
   }
 }
