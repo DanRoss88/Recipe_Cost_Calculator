@@ -1,6 +1,9 @@
 # Recipe_Cost_Calculator
+
 # Author: Dan Ross
+
 # Date: 2025-03-05
+
 # Recipe Cost Calculator
 
 A simple browser-based application for calculating recipe costs.
@@ -27,6 +30,7 @@ These instructions will help you run the Recipe Cost Calculator locally on your 
 ### Option 1: Run locally with a basic HTTP server (Easiest)
 
 #### For Windows:
+
 1. Download or clone this repository
 2. Navigate to the project directory in Command Prompt or PowerShell
 3. If you have Python installed, start a simple HTTP server:
@@ -40,6 +44,7 @@ These instructions will help you run the Recipe Cost Calculator locally on your 
 4. Open your browser and go to `http://localhost:8000`
 
 #### For Mac:
+
 1. Download or clone this repository
 2. Open Terminal (Applications > Utilities > Terminal)
 3. Navigate to the project directory:
@@ -57,6 +62,7 @@ These instructions will help you run the Recipe Cost Calculator locally on your 
 5. Open your browser and navigate to `http://localhost:8000`
 
 #### For Linux:
+
 1. Download or clone this repository
 2. Open Terminal
 3. Navigate to the project directory
@@ -83,38 +89,40 @@ These instructions will help you run the Recipe Cost Calculator locally on your 
    npm install --save-dev electron
    ```
 5. Create a main.js file in the project root:
-   ```javascript
-   const { app, BrowserWindow } = require('electron')
-   const path = require('path')
 
-   function createWindow () {
+   ```javascript
+   const { app, BrowserWindow } = require("electron");
+   const path = require("path");
+
+   function createWindow() {
      const win = new BrowserWindow({
        width: 1200,
        height: 800,
        webPreferences: {
-         nodeIntegration: true
-       }
-     })
+         nodeIntegration: true,
+       },
+     });
 
-     win.loadFile('index.html')
+     win.loadFile("index.html");
    }
 
    app.whenReady().then(() => {
-     createWindow()
+     createWindow();
 
-     app.on('activate', () => {
+     app.on("activate", () => {
        if (BrowserWindow.getAllWindows().length === 0) {
-         createWindow()
+         createWindow();
        }
-     })
-   })
+     });
+   });
 
-   app.on('window-all-closed', () => {
-     if (process.platform !== 'darwin') {
-       app.quit()
+   app.on("window-all-closed", () => {
+     if (process.platform !== "darwin") {
+       app.quit();
      }
-   })
+   });
    ```
+
 6. Add this to your package.json scripts:
    ```json
    "scripts": {
@@ -129,18 +137,21 @@ These instructions will help you run the Recipe Cost Calculator locally on your 
 ### Option 3: Package as a desktop application
 
 #### For Windows:
+
 ```
 npm install --save-dev electron-packager
 npx electron-packager . RecipeCalculator --platform=win32 --arch=x64
 ```
 
 #### For Mac:
+
 ```
 npm install --save-dev electron-packager
 npx electron-packager . RecipeCalculator --platform=darwin --arch=x64
 ```
 
 #### For Linux:
+
 ```
 npm install --save-dev electron-packager
 npx electron-packager . RecipeCalculator --platform=linux --arch=x64
